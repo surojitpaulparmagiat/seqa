@@ -31,11 +31,15 @@ ItemModel.init(
       allowNull: true,
     },
     sales_price: {
-      type: DataTypes.DECIMAL(10, 6),
+      type: DataTypes.DECIMAL(10, 2),
+      allowNull: true,
+    },
+    sales_description: {
+      type: DataTypes.STRING,
       allowNull: true,
     },
     purchase_price: {
-      type: DataTypes.DECIMAL(10, 6),
+      type: DataTypes.DECIMAL(10, 2),
       allowNull: true,
     },
 
@@ -105,10 +109,9 @@ ItemModel.init(
 ItemModel.belongsTo(ItemUnitModel, {
   foreignKey: "base_unit_id",
   as: "base_unit",
-    onDelete: "CASCADE",
-    onUpdate: "CASCADE",
+  onDelete: "CASCADE",
+  onUpdate: "CASCADE",
 });
-
 
 module.exports = {
   ItemModel,
