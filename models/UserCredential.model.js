@@ -1,7 +1,7 @@
 const { Model, DataTypes } = require("sequelize");
 const sequelize = require("../dbConfig/dbConnection");
 const { UserModel } = require("./User.model");
-const bcrypt = require("bcrypt");
+const bcrypt = require("bcryptjs");
 
 class UserCredentialModel extends Model {
   async hashPasswordAndSave(
@@ -11,7 +11,7 @@ class UserCredentialModel extends Model {
     const hashedPassword = await bcrypt.hash(plain_password, 10);
     return UserCredentialModel.create(
       {
-        user_id: user_id,
+        user_id,
         email,
         password: hashedPassword,
       },

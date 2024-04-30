@@ -22,6 +22,11 @@ UserModel.init(
       type: DataTypes.STRING,
       allowNull: true,
     },
+    address: {
+      type: DataTypes.STRING,
+      defaultValue: "",
+      allowNull: true,
+    },
   },
   {
     sequelize,
