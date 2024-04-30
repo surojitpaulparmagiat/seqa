@@ -1,8 +1,24 @@
 const { Model, DataTypes } = require("sequelize");
 const sequelize = require("../dbConfig/dbConnection");
-const { UserDetailsModel } = require("./UserDetails.model");
+const { UserModel } = require("./User.model");
+const bcrypt = require("bcrypt");
 
-class UserCredentialModel extends Model {}
+class UserCredentialModel extends Model {
+  async hashPasswordAndSave(
+    { user_id, email, plain_password },
+    { transaction },
+  ) {
+    const hashedPassword = await bcrypt.hash(plain_password, 10);
+    return UserCredentialModel.create(
+      {
+        user_id: user_id,
+        email,
+        password: hashedPassword,
+      },
+      { transaction },
+    );
+  }
+}
 
 UserCredentialModel.init(
   {
@@ -19,9 +35,8 @@ UserCredentialModel.init(
       type: DataTypes.INTEGER,
       allowNull: false,
       references: {
-        model: UserDetailsModel,
+        model: UserModel,
         key: "id",
-        cascade: true,
       },
     },
   },
@@ -30,6 +45,21 @@ UserCredentialModel.init(
     tableName: "user_credentials",
   },
 );
+
+// note: adding both of this bi-directional association is very important
+//  so we can use them in our queries (in includes)
+UserCredentialModel.belongsTo(UserModel, {
+  foreignKey: "user_id",
+  // note: very important to add this to cascade delete
+  onDelete: "CASCADE",
+  onUpdate: "CASCADE",
+});
+UserModel.hasOne(UserCredentialModel, {
+  as: "credentials",
+  foreignKey: "user_id",
+  onDelete: "CASCADE",
+  onUpdate: "CASCADE",
+});
 
 module.exports = {
   UserCredentialModel,

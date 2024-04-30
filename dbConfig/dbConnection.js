@@ -2,7 +2,7 @@ const { Sequelize } = require("sequelize");
 const sequelize = new Sequelize("sqdb", "root", "arijit", {
   host: "localhost",
   dialect: "mysql",
-  logging: false,
+  logging: console.log,
 });
 
 (async () => {

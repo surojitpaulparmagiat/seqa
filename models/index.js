@@ -1,19 +1,21 @@
-const { UserDetailsModel } = require("./UserDetails.model");
+const { UserModel } = require("./User.model");
 const { UserCredentialModel } = require("./UserCredential.model");
 const { FirmModel } = require("./Firm.model");
 const { UserFirmModel } = require("./UserFirm.model");
 
 async function syncTable() {
-  await FirmModel.sync({ alter: true });
-  await UserDetailsModel.sync({ alter: true });
-  await UserCredentialModel.sync({ alter: true });
-    await UserFirmModel.sync({ alter: true });
+
+  const force =false;
+  await UserModel.sync({force, alter: true });
+  await FirmModel.sync({force, alter: true });
+  await UserModel.sync({force, alter: true });
+  await UserCredentialModel.sync({force, alter: true });
 }
 
-syncTable().catch(console.error);
+// syncTable().catch(console.error);
 module.exports = {
   UserCredentialModel,
-  UserDetailsModel,
+  UserFirmModel,
   FirmModel,
-  UserFirmModel
+  UserModel,
 };

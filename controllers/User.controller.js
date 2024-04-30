@@ -22,7 +22,20 @@ const getUserByIdController = async (req, res) => {
   }
 };
 
+
+const getUserByEmailController = async (req, res) => {
+  const { email } = req.params;
+  try {
+    const user_service = new UserService();
+    const user = await user_service.getByEmail(email);
+    res.status(200).json(user);
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
+};
+
 module.exports = {
   createUserController,
   getUserByIdController,
+  getUserByEmailController
 };

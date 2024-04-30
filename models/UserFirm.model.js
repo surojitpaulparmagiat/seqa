@@ -1,6 +1,6 @@
 const { Model, DataTypes } = require("sequelize");
 const sequelize = require("../dbConfig/dbConnection");
-const { UserDetailsModel } = require("./UserDetails.model");
+const { UserModel } = require("./User.model");
 const { FirmModel } = require("./Firm.model");
 
 class UserFirmModel extends Model {}
@@ -16,9 +16,8 @@ UserFirmModel.init(
       type: DataTypes.INTEGER,
       allowNull: false,
       references: {
-        model: UserDetailsModel,
+        model: UserModel,
         key: "id",
-        cascade: true,
       },
     },
     firm_id: {
@@ -27,7 +26,6 @@ UserFirmModel.init(
       references: {
         model: FirmModel,
         key: "id",
-        cascade: true,
       },
     },
     role: {
@@ -41,10 +39,18 @@ UserFirmModel.init(
   },
 );
 
-
-UserFirmModel.belongsTo(UserDetailsModel, { foreignKey: "user_id", as: "user" });
-UserDetailsModel.belongsToMany(FirmModel, { through: UserFirmModel, foreignKey: "user_id", otherKey: "firm_id", as: "firms" });
-
+UserModel.hasMany(UserFirmModel, {
+  as: "associated_firms",
+  foreignKey: "user_id",
+  onDelete: "CASCADE",
+  onUpdate: "CASCADE",
+});
+FirmModel.hasMany(UserFirmModel, {
+  as: "associated_users",
+  foreignKey: "firm_id",
+  onDelete: "CASCADE",
+  onUpdate: "CASCADE",
+});
 
 module.exports = {
   UserFirmModel,

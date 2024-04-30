@@ -1,20 +1,20 @@
+//@ts-check
+"use strict";
 const sequelize = require("../dbConfig/dbConnection");
-const { UserCredentialModel, UserDetailsModel } = require("../models");
-const { UserFirmModel } = require("../models/UserFirm.model");
+const { UserCredentialModel, UserModel, UserFirmModel } = require("../models");
 
 class UserService {
-  // create a new user
-  async create(user) {
-    const password = user.password;
-    const email = user.email;
+  async create(user_creation_payload) {
+    const password = user_creation_payload.password;
+    const email = user_creation_payload.email;
 
-    const first_name = user.first_name;
-    const last_name = user.last_name;
-    const middle_name = user.middle_name;
+    const first_name = user_creation_payload.first_name;
+    const last_name = user_creation_payload.last_name;
+    const middle_name = user_creation_payload.middle_name;
 
     await sequelize.transaction(async (t) => {
-      // create a new user
-      const created_user = await UserDetailsModel.create(
+      // create a new user_creation_payload
+      const created_user = await UserModel.create(
         {
           first_name: first_name,
           last_name: last_name,
@@ -25,11 +25,12 @@ class UserService {
       const created_user_id = created_user.id;
 
       // save the credentials
-      await UserCredentialModel.create(
+      const user_credentials_mode = new UserCredentialModel();
+      await user_credentials_mode.hashPasswordAndSave(
         {
           user_id: created_user_id,
           email: email,
-          password: password,
+          plain_password: password,
         },
         {
           transaction: t,
@@ -40,10 +41,20 @@ class UserService {
   }
 
   async getByEmail(email) {
-    const user = await UserCredentialModel.findOne({
-      where: {
-        email: email,
-      },
+    const user = await UserModel.findOne({
+      include: [
+        {
+          required: false, // cause a left join
+          model: UserCredentialModel,
+          as: "credentials",
+          where: {
+            email: email,
+          },
+          // don't need to select any fields from credential table.
+          // we just need to include for the where clause
+          attributes: [],
+        },
+      ],
     });
 
     if (!user) {
@@ -53,13 +64,13 @@ class UserService {
   }
 
   async getById(id) {
-    const user = await UserDetailsModel.findByPk(id, {
-      // include: [
-      //   {
-      //     model: UserFirmModel,
-      //     as: "firms",
-      //   },
-      // ],
+    const user = await UserModel.findByPk(id, {
+      include: [
+        {
+          model: UserFirmModel,
+          as: "associated_firms",
+        },
+      ],
     });
     if (!user) {
       throw new Error("User not found");
