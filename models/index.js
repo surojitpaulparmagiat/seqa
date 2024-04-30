@@ -14,12 +14,11 @@ async function syncTable() {
   await ItemUnitModel.sync({ force, alter: true });
 }
 
-// syncTable().catch(console.error);
 module.exports = {
   UserCredentialModel,
   UserFirmModel,
   FirmModel,
   UserModel,
-    ItemModel,
-    ItemUnitModel,
+  ItemModel,
+  ItemUnitModel,
 };

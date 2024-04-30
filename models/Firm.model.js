@@ -31,13 +31,16 @@ FirmModel.init(
         key: "id",
       },
     },
+    status: {
+      type: DataTypes.ENUM("active", "inactive", "deleted"),
+      defaultValue: "active",
+    },
   },
   {
     tableName: "firms",
     sequelize,
   },
 );
-
 
 // each firm is created by some user and each firm has an admin user
 FirmModel.hasOne(UserModel, {

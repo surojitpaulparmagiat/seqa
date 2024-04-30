@@ -27,6 +27,10 @@ UserModel.init(
       defaultValue: "",
       allowNull: true,
     },
+    status: {
+      type: DataTypes.ENUM("active", "inactive", "deleted"),
+      defaultValue: "active",
+    },
   },
   {
     sequelize,

@@ -32,6 +32,10 @@ UserFirmModel.init(
       type: DataTypes.STRING,
       allowNull: false,
     },
+    status: {
+      type: DataTypes.ENUM("active", "inactive", "deleted"),
+      defaultValue: "active",
+    },
   },
   {
     sequelize,
