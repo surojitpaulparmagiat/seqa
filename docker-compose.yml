@@ -1,4 +1,4 @@
-name: "docker_node_mysql"
+name: "dev_container"
 services:
   server:
     container_name: "server"
@@ -29,3 +29,5 @@ services:
           ignore:
             - .git
             - node_modules
+        - action: rebuild
+          path: package.json

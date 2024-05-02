@@ -31,7 +31,7 @@ ItemModel.init(
       allowNull: true,
     },
     sales_price: {
-      type: DataTypes.DECIMAL(10, 2),
+      type: DataTypes.DECIMAL(12, 2),
       allowNull: true,
     },
     sales_description: {
@@ -39,7 +39,7 @@ ItemModel.init(
       allowNull: true,
     },
     purchase_price: {
-      type: DataTypes.DECIMAL(10, 2),
+      type: DataTypes.DECIMAL(12, 2),
       allowNull: true,
     },
 

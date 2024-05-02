@@ -1,6 +1,7 @@
 const { ItemUnitService } = require("./ItemUnit.service");
 const sequelize = require("../dbConfig/dbConnection");
 const { ItemModel, ItemUnitModel } = require("../models");
+const xlsx = require("xlsx");
 
 class ItemService {
   constructor({ firm_id, user_id }) {
@@ -67,12 +68,78 @@ class ItemService {
           model: ItemUnitModel,
           as: "base_unit",
           required: false,
-          attributes: ["unit_symbol","unit_name"],
+          attributes: ["unit_symbol", "unit_name"],
         },
       ],
       limit: Number(limit),
       offset: Number((page - 1) * limit),
     });
+  }
+
+  async createAllItemsFromFile({ file_location_on_disk ,res}) {
+    const unit_service = new ItemUnitService({ firm_id: this.firm_id });
+
+    const workbook = xlsx.readFile(file_location_on_disk, {
+      type: "file",
+    });
+    const worksheet = workbook.Sheets[workbook.SheetNames[0]];
+    const json = xlsx.utils.sheet_to_json(worksheet);
+
+    const existed_units = {};
+
+    const chunk_size = 1000;
+    const no_of_chunks = Math.ceil(json.length / chunk_size);
+    const items_mapped_chucked = Array(no_of_chunks).fill([]);
+
+    await sequelize.transaction(async (t) => {
+      for await (const [inx, item] of json.entries()) {
+        const mapped_item = {
+          firm_id: this.firm_id,
+          item_name: item.item_name,
+          item_name_sec_lang: item.item_name_sec_lang ?? null,
+          sales_price: item.sales_price ?? null,
+          purchase_price: item.purchase_price ?? null,
+          created_by_id: this.user_id,
+          updated_by_id: this.user_id,
+          base_unit_id: null,
+          sales_unit_id: null,
+          purchase_unit_id: null,
+        };
+
+        const base_unit_symbol = item.base_unit;
+        // fetch the base unit from db if not exists in the existed_units object
+        // then calling getOrCreate method of ItemUnitService
+        if (base_unit_symbol) {
+          const from_existed_units = existed_units[base_unit_symbol];
+          if (from_existed_units) {
+            mapped_item.base_unit_id = from_existed_units.id;
+          } else {
+            const base_unit = await unit_service.getOrCreate(base_unit_symbol, {
+              transaction: t,
+            });
+            mapped_item.base_unit_id = base_unit.id;
+            existed_units[base_unit_symbol] = base_unit;
+          }
+        }
+
+
+        // push this item to a specific chunk
+        const push_at_chunk = Math.floor(inx / chunk_size);
+        if (!items_mapped_chucked[push_at_chunk]) {
+          items_mapped_chucked[push_at_chunk] = [];
+        }
+        items_mapped_chucked[push_at_chunk].push(mapped_item);
+      }
+
+      let c = 1;
+      // create items in chunks
+      for await (const chunk of items_mapped_chucked) {
+        res.write(` Creating chunk ${c++} of ${no_of_chunks}\n`);
+        await ItemModel.bulkCreate(chunk, { transaction: t });
+      }
+    });
+
+    return items_mapped_chucked;
   }
 }
 
