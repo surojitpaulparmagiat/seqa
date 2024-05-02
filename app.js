@@ -1,3 +1,4 @@
+require("dotenv").config();
 const express = require("express");
 
 // just importing these files will run the code inside them
