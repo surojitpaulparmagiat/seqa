@@ -1,5 +1,4 @@
 name: "docker_node_mysql"
-version: "3.x"
 services:
   server:
     container_name: "server"
@@ -10,9 +9,6 @@ services:
       dockerfile: Dockerfile
     ports:
       - "5030:5030"
-    volumes:
-      - .:/app
-      - /app/node_modules # this is to prevent the node_modules folder from being overwritten
     command: npm run dev
     # this the env files that contain the environment variables
     env_file:
@@ -25,3 +21,11 @@ services:
       - MYSQL_USER=${MYSQL_USER}
       - MYSQL_PASSWORD=${MYSQL_PASSWORD}
       - MYSQL_DATABASE=${MYSQL_DATABASE}
+    develop:
+      watch:
+        - action: sync
+          path : .
+          target: /app
+          ignore:
+            - .git
+            - node_modules
