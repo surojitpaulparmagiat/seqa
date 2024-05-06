@@ -133,10 +133,12 @@ class ItemService {
 
       let c = 1;
       // create items in chunks
+      console.time("bulk create items");
       for await (const chunk of items_mapped_chucked) {
         res.write(` Creating chunk ${c++} of ${no_of_chunks}\n`);
         await ItemModel.bulkCreate(chunk, { transaction: t });
       }
+      console.timeEnd("bulk create items");
     });
 
     return items_mapped_chucked;
@@ -227,7 +229,10 @@ class ItemService {
     sales_unit_id = NULLIF(@sales_unit_id, ''),
     purchase_unit_id = NULLIF(@purchase_unit_id, '');
     `;
-    return await sequelize.query(q);
+    console.time("load data in file");
+    const res = await sequelize.query(q);
+    console.timeEnd("load data in file");
+    return res;
   }
 }
 
