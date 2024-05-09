@@ -2,7 +2,7 @@ const { ItemUnitService } = require("./ItemUnit.service");
 const sequelize = require("../dbConfig/dbConnection");
 const { ItemModel, ItemUnitModel } = require("../models");
 const xlsx = require("xlsx");
-const { sql } = require("sequelize");
+const { sql, QueryTypes } = require("sequelize");
 const path = require("node:path");
 class ItemService {
   constructor({ firm_id, user_id }) {
@@ -219,6 +219,8 @@ class ItemService {
     // pass the csv file to the mysql
     // handle possible null values in the csv file
     // https://stackoverflow.com/questions/2675323/mysql-load-null-values-from-csv-data
+    // show global variables like 'local_infile';
+    // set global local_infile = 'ON';
     const q = `load data local infile '${csv_file_name}' into table items 
     fields terminated by ',' 
     lines terminated by '\n' 
@@ -233,6 +235,24 @@ class ItemService {
     const res = await sequelize.query(q);
     console.timeEnd("load data in file");
     return res;
+  }
+
+  //https://stackoverflow.com/questions/29280785/calling-stored-procedures-in-sequelize-js
+  async getAverageOfItemsByProedure() {
+    const rset = await sequelize.query(
+      `CALL itemAverageSalesPrice(:firm_id, @dummy); 
+      SELECT @dummy;
+      SELECT 1+1;
+      `,
+      {
+        replacements: { firm_id: this.firm_id },
+        type: QueryTypes.SELECT,
+      },
+    );
+    const ROWS = rset.slice(1);
+    console.log("ROWS", ROWS);
+
+    return ROWS;
   }
 }
 

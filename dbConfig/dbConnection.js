@@ -10,7 +10,7 @@ const database = process.env.MYSQL_DATABASE;
 const sequelize = new Sequelize(database, user, password, {
   host: host,
   dialect: "mysql",
-  logging: false,
+  logging: console.log,
   benchmark: true,
   dialectOptions: {
     infileStreamFactory: (file_name) => {
@@ -18,6 +18,8 @@ const sequelize = new Sequelize(database, user, password, {
       console.log("path_name", path_name)
       return createReadStream(path_name);
     },
+    multipleStatements: true
+
   },
 });
 

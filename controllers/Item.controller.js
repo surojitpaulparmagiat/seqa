@@ -73,9 +73,23 @@ const bulkImportInFile = async (req, res) => {
   }
 };
 
+const getSalesItemsAverageController = async (req, res) => {
+  try {
+    const firm_id = req.body.firm_id;
+    const user_id = req.body.user_id;
+    const item_service = new ItemService({ firm_id, user_id });
+    const items = await item_service.getAverageOfItemsByProedure();
+
+    return res.status(200).json({ items });
+  } catch (error) {
+    return res.status(400).json({ error: error.message });
+  }
+};
+
 module.exports = {
   createItemController,
   getAllItemsController,
   bulkImportItemsController,
   bulkImportInFile,
+  getSalesItemsAverageController
 };
